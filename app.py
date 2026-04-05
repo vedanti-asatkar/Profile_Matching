@@ -1,17 +1,31 @@
 import streamlit as st
 import pandas as pd
 import os
+from datetime import datetime
 
+# -------------------------
+# Load data
+# -------------------------
 df = pd.read_csv("major_project_dataset.csv")
 matches = pd.read_csv("all_top_matches.xls")
 feedback = pd.read_csv("feedback.xls")
 
+# Clean column names
+df.columns = df.columns.str.strip().str.lower()
+matches.columns = matches.columns.str.strip()
+
+# -------------------------
+# Create feedback file
+# -------------------------
 if not os.path.exists("live_feedback.csv"):
-    pd.DataFrame(columns=["user_id", "action"]).to_csv(
+    pd.DataFrame(columns=["user_id", "action", "timestamp"]).to_csv(
         "live_feedback.csv",
         index=False
     )
 
+# -------------------------
+# Page setup
+# -------------------------
 st.set_page_config(
     page_title="Intelligent Hybrid Recommendation System",
     layout="wide"
@@ -23,11 +37,31 @@ st.write(
     "and adaptive machine learning."
 )
 
+# -------------------------
+# User selection
+# -------------------------
 user_id = st.selectbox("Select Your User ID", df["user_id"])
 
-if st.button("Show Recommendations"):
-    filtered_matches = matches[matches["user_id"] == user_id]
+# -------------------------
+# Selected user profile
+# -------------------------
+selected_profile = df[df["user_id"] == user_id]
 
+if not selected_profile.empty:
+    selected_profile = selected_profile.iloc[0]
+
+    st.subheader("Selected User Profile")
+    st.write(f"Name: {selected_profile['name']}")
+    st.write(f"Career Goal: {selected_profile['career goal']}")
+    st.write(f"MBTI: {selected_profile['mbti']}")
+    st.write(f"Location: {selected_profile['location']}")
+
+# -------------------------
+# Show recommendations
+# -------------------------
+filtered_matches = matches[matches["user_id"] == user_id]
+
+if st.button("Show Recommendations"):
     st.subheader(f"Top Matches for {user_id}")
 
     if filtered_matches.empty:
@@ -43,17 +77,32 @@ if st.button("Show Recommendations"):
                 value=f"{row['Compatibility Score']}%"
             )
 
-            profile = df[df["name"] == row["Recommended User"]]
+            profile = df[df["name"] == row["Recommended User"].lower()]
 
             if not profile.empty:
                 profile = profile.iloc[0]
 
                 st.write(f"Name: {profile['name']}")
-                st.write(f"Career Goal: {profile['career goals']}")
+                st.write(f"Career Goal: {profile['career goal']}")
                 st.write(f"MBTI: {profile['mbti']}")
                 st.write(f"Location: {profile['location']}")
                 st.write("---")
 
+# -------------------------
+# Best match
+# -------------------------
+if not filtered_matches.empty:
+    best_match = filtered_matches.iloc[0]
+
+    st.subheader("Best Match")
+    st.metric(
+        label=best_match["Recommended User"],
+        value=f"{best_match['Compatibility Score']}%"
+    )
+
+# -------------------------
+# Feedback section
+# -------------------------
 st.subheader("Recommendation Feedback")
 
 user_feedback = st.radio(
@@ -66,7 +115,8 @@ if st.button("Submit Feedback"):
 
     new_feedback = pd.DataFrame({
         "user_id": [user_id],
-        "action": [action_value]
+        "action": [action_value],
+        "timestamp": [datetime.now()]
     })
 
     new_feedback.to_csv(
@@ -78,9 +128,10 @@ if st.button("Submit Feedback"):
 
     st.success("Feedback saved successfully.")
 
+# -------------------------
+# Analytics
+# -------------------------
 st.subheader("Recommendation Analytics")
-
-filtered_matches = matches[matches["user_id"] == user_id]
 
 if not filtered_matches.empty:
     chart_data = filtered_matches.set_index("Recommended User")[
