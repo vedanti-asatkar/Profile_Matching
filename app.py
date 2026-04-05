@@ -40,7 +40,11 @@ st.write(
 # -------------------------
 # User selection
 # -------------------------
-user_id = st.selectbox("Select Your User ID", df["user_id"])
+top_col1, top_col2 = st.columns([2, 1])
+with top_col1:
+    user_id = st.selectbox("Select Your User ID", df["user_id"])
+with top_col2:
+    st.info("Select a profile and review the top professional matches.")
 
 # -------------------------
 # Selected user profile
@@ -51,10 +55,13 @@ if not selected_profile.empty:
     selected_profile = selected_profile.iloc[0]
 
     st.subheader("Selected User Profile")
-    st.write(f"Name: {selected_profile['name']}")
-    st.write(f"Career Goal: {selected_profile['career goal']}")
-    st.write(f"MBTI: {selected_profile['mbti']}")
-    st.write(f"Location: {selected_profile['location']}")
+    col1, col2 = st.columns(2)
+    with col1:
+        st.write(f"**Name:** {selected_profile['name'].title()}")
+        st.write(f"**Career Goal:** {selected_profile['career goal']}")
+    with col2:
+        st.write(f"**MBTI:** {selected_profile['mbti']}")
+        st.write(f"**Location:** {selected_profile['location']}")
 
 # -------------------------
 # Show recommendations
@@ -72,21 +79,24 @@ if st.button("Show Recommendations"):
         st.subheader("Compatibility Scores")
 
         for _, row in filtered_matches.iterrows():
-            st.metric(
-                label=row["Recommended User"],
-                value=f"{row['Compatibility Score']}%"
-            )
+            metric_col, details_col = st.columns([1, 2])
+            with metric_col:
+                st.metric(
+                    label=row["Recommended User"].title(),
+                    value=f"{row['Compatibility Score']}%"
+                )
 
             profile = df[df["name"] == row["Recommended User"].lower()]
 
             if not profile.empty:
                 profile = profile.iloc[0]
 
-                st.write(f"Name: {profile['name']}")
-                st.write(f"Career Goal: {profile['career goal']}")
-                st.write(f"MBTI: {profile['mbti']}")
-                st.write(f"Location: {profile['location']}")
-                st.write("---")
+                with details_col:
+                    st.write(f"**Name:** {profile['name'].title()}")
+                    st.write(f"**Career Goal:** {profile['career goal']}")
+                    st.write(f"**MBTI:** {profile['mbti']}")
+                    st.write(f"**Location:** {profile['location']}")
+                st.divider()
 
 # -------------------------
 # Best match
@@ -95,10 +105,19 @@ if not filtered_matches.empty:
     best_match = filtered_matches.iloc[0]
 
     st.subheader("Best Match")
-    st.metric(
-        label=best_match["Recommended User"],
-        value=f"{best_match['Compatibility Score']}%"
-    )
+    best_col1, best_col2 = st.columns([1, 2])
+    with best_col1:
+        st.metric(
+            label=best_match["Recommended User"].title(),
+            value=f"{best_match['Compatibility Score']}%"
+        )
+    with best_col2:
+        best_profile = df[df["name"] == best_match["Recommended User"].lower()]
+        if not best_profile.empty:
+            best_profile = best_profile.iloc[0]
+            st.write(f"**Career Goal:** {best_profile['career goal']}")
+            st.write(f"**MBTI:** {best_profile['mbti']}")
+            st.write(f"**Location:** {best_profile['location']}")
 
 # -------------------------
 # Feedback section
@@ -107,7 +126,8 @@ st.subheader("Recommendation Feedback")
 
 user_feedback = st.radio(
     "Do you like these recommendations?",
-    ["Accept", "Reject"]
+    ["Accept", "Reject"],
+    horizontal=True
 )
 
 if st.button("Submit Feedback"):
