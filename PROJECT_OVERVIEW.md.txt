@@ -1,0 +1,27 @@
+PROJECT_OVERVIEW.md
+# Intelligent Hybrid Recommendation System
+
+## Live Deployed Application
+https://profilematching.streamlit.app
+
+## GitHub Repository
+https://github.com/vedanti-asatkar/Profile_Matching
+
+## Project Overview
+This project is an AI-powered profile-based matching platform that recommends professionally compatible users based on:
+- NLP semantic similarity
+- MBTI work-style compatibility
+- location matching
+- adaptive feedback learning
+
+The system is deployed using Streamlit Cloud and supports personalized recommendations for each user profile.
+Profile_Matching/
+│
+├── app.py
+├── major_project_dataset.csv
+├── all_top_matches.xls
+├── feedback.xls
+├── live_feedback.csv
+├── README.md
+├── requirements.txt
+├── PROJECT_OVERVIEW.md
